@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 	int debug            = 0;
 	char *version        = VERSION;
 	char *keyFileName    = DEFAULT_KEY_NAME;
+	unsigned char l, r;
 	
 	// Run module init functions
 	keyfile_init();
@@ -88,8 +89,18 @@ int main(int argc, char *argv[]) {
 	// Loop over input one char at a time and encrypt
 	while ((ch = getchar()) != EOF) {
 		
-		// Print cyphertext
-		putchar(mirrorfield_crypt_char((unsigned char)ch, debug));
+		// Crypt right 4 bits
+		r = (ch & 0x0F);
+		r = mirrorfield_crypt_char(r, debug);
+		
+		// Get left 4 bits
+		l = (ch >> 4);
+		l = mirrorfield_crypt_char(l, debug);
+		
+		// Assemble right and left results back into a byte
+		ch = (l << 4) + r;
+		
+		putchar(ch);
 	}
 
 	return 0;

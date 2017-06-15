@@ -9,7 +9,7 @@
 /*
  * Program version number. Enumerated when the -v command option is used.
  */
-#define VERSION                "0.2.0"
+#define VERSION                "0.1.0"
 
 /*
  * The DEFAULT_KEY_NAME is the name of the default key that myycrypt will
@@ -30,6 +30,6 @@
  * in the key data. Do not ever change this unless you know what you are
  * doing.
  */
-#define GRID_SIZE              64
+#define GRID_SIZE              4
 
 #endif
