@@ -23,7 +23,7 @@
  * the key itself.
  */
 
-#define MIRROR_DENSITY   20
+#define MIRROR_DENSITY   4
 
 // Static variables
 static FILE *keyFile;

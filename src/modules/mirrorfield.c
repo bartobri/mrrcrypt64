@@ -532,15 +532,15 @@ static void mirrorfield_draw(struct gridnode *p) {
 			}
 			
 			// Print apropriate mirror field character
-			if (r == -1 && c == -1)                // Upper left corner
+			if (r == -1 && c == -1) {               // Upper left corner
 				printf("%2c", ' ');
-			else if (r == -1 && c == GRID_SIZE)         // Upper right corner
+			} else if (r == -1 && c == GRID_SIZE) {        // Upper right corner
 				printf("%2c", ' ');
-			else if (r == GRID_SIZE && c == -1)         // Lower left corner
+			} else if (r == GRID_SIZE && c == -1) {       // Lower left corner
 				printf("%2c", ' ');
-			else if (r == GRID_SIZE && c == GRID_SIZE)  // Lower right corner
+			} else if (r == GRID_SIZE && c == GRID_SIZE) { // Lower right corner
 				printf("%2c", ' ');
-			else if (r == -1) {
+			} else if (r == -1) {
 				// Top chars
 				for (i = 0; gridnodes[c + i].up == NULL; i += GRID_SIZE)
 					;
@@ -560,15 +560,16 @@ static void mirrorfield_draw(struct gridnode *p) {
 				for (i = 1; gridnodes[(r * GRID_SIZE) + c + i].left == NULL; ++i)
 					;
 				printf("%2x", gridnodes[(r * GRID_SIZE) + c + i].left->value);
-			} else if (gridnodes[(r * GRID_SIZE) + c].value == MIRROR_FORWARD)
+			} else if (gridnodes[(r * GRID_SIZE) + c].value == MIRROR_FORWARD) {
 				printf("%2c", '/');
-			else if (gridnodes[(r * GRID_SIZE) + c].value == MIRROR_BACKWARD)
+			} else if (gridnodes[(r * GRID_SIZE) + c].value == MIRROR_BACKWARD) {
 				printf("%2c", '\\');
-			else if (gridnodes[(r * GRID_SIZE) + c].value == MIRROR_STRAIGHT)
+			} else if (gridnodes[(r * GRID_SIZE) + c].value == MIRROR_STRAIGHT) {
 				printf("%2c", '-');
-			else
+			} else {
 				printf("%2c", ' ');
-			
+			}
+
 			// Un-Highlight cell if r/c match
 			if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE && &gridnodes[(r * GRID_SIZE) + c] == p)
 				printf("\x1B[0m");
