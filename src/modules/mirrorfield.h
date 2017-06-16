@@ -13,6 +13,6 @@ void mirrorfield_init(void);
 int  mirrorfield_set(unsigned char);
 int  mirrorfield_validate(void);
 void mirrorfield_link(void);
-//unsigned char mirrorfield_crypt_char(unsigned char, int);
+unsigned char mirrorfield_crypt_char(unsigned char, int);
 
 #endif

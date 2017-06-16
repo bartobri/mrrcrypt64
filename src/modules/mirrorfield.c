@@ -44,8 +44,8 @@ static struct gridnode perimeter[MIRROR_FIELD_COUNT][GRID_SIZE * 4];
 static int so_perimeter[MIRROR_FIELD_COUNT][GRID_SIZE * 4];
 
 // Static Function Prototypes
-//static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *, int, int);
-//static void mirrorfield_roll_chars(struct gridnode *, struct gridnode *);
+static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *, int, int);
+static void mirrorfield_roll_chars(struct gridnode *, struct gridnode *, int);
 //static void mirrorfield_draw(struct gridnode *);
 
 /*
@@ -228,12 +228,15 @@ void mirrorfield_link(void) {
  * which is then returned. It also calls mirrorfield_roll_chars() after
  * the cyphertext character is determined.
  */
-/*
 unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	int d;
-	struct gridnode *startnode = &perimeter[(int)ch];
+	struct gridnode *startnode = NULL;
 	struct gridnode *endnode = NULL;
+	static int m = 0;
 	static int p = 0;
+	
+	// Get starting node
+	startnode = &perimeter[m][(int)ch];
 	
 	// Set initial direction
 	if (startnode->down != NULL) {
@@ -250,7 +253,7 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	endnode = mirrorfield_crypt_char_advance(startnode, d, debug);
 	
 	// Roll start and end chars
-	mirrorfield_roll_chars(startnode, endnode);
+	mirrorfield_roll_chars(startnode, endnode, m);
 	
 	// This is a way of returning the cleartext char as the cyphertext char and still preserve decryption.
 	if ((endnode->value + startnode->value) % (GRID_SIZE * 4) == p) {
@@ -259,17 +262,19 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	} else {
 		p = endnode->value > startnode->value ? endnode->value : startnode->value;
 	}
+	
+	// Cycle mirror field index
+	m = (m + 1) % MIRROR_FIELD_COUNT;
 
 	// Return crypted char
 	return (unsigned char)endnode->value;
 }
-*/
+
 /*
  * The mirrorfield_crypt_char_advance() is a recursive function that traverses
  * the mirror field and returns a pointer to the node containing the cypthertext
  * character. This function also handles mirror rotation.
  */
-/*
 static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d, int debug) {
 	struct gridnode *t;
 	
@@ -278,7 +283,7 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
 	ts.tv_sec = debug / 1000;
 	ts.tv_nsec = (debug % 1000) * 1000000;
 	if (debug) {
-		mirrorfield_draw(p);
+		//mirrorfield_draw(p);
 		fflush(stdout);
 		nanosleep(&ts, NULL);
 	}
@@ -362,15 +367,14 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
 	// Return cyphertext node
 	return p;
 }
-*/
+
 /*
  * The mirrorfield_roll_chars() function received the starting and ending
  * nodes of the cleartext and cyphertext character respectively, and
  * implements a character rolling process to reposition the nodes and
  * increase randomness in the output. No value is returned.
  */
-/*
-static void mirrorfield_roll_chars(struct gridnode *startnode, struct gridnode *endnode) {
+static void mirrorfield_roll_chars(struct gridnode *startnode, struct gridnode *endnode, int m) {
 	int i = 1;
 	static int j = 0;
 	struct gridnode *rollstart;
@@ -378,8 +382,8 @@ static void mirrorfield_roll_chars(struct gridnode *startnode, struct gridnode *
 	struct gridnode temp;
 
 	do {
-		rollstart = &perimeter[(startnode->value + j + i) % (GRID_SIZE * 4)];
-		rollend = &perimeter[(endnode->value + j + i) % (GRID_SIZE * 4)];
+		rollstart = &perimeter[m][(startnode->value + j + i) % (GRID_SIZE * 4)];
+		rollend = &perimeter[m][(endnode->value + j + i) % (GRID_SIZE * 4)];
 		++i;
 	} while (rollstart == endnode || rollend == startnode);
 	
@@ -525,7 +529,7 @@ static void mirrorfield_roll_chars(struct gridnode *startnode, struct gridnode *
 
 	return;
 }
-*/
+
 /*
  * The mirrorfield_draw() function draws the current state of the mirror
  * field and perimeter characters. It receives x/y coordinates and highlights
