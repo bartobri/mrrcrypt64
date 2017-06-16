@@ -173,50 +173,55 @@ int mirrorfield_validate(void) {
  * The mirrorfield_link() function creates links between nodes to speed
  * up the encryption/decryption process.
  */
-/*
 void mirrorfield_link(void) {
-	int i, j;
+	int i, j, k;
 	struct gridnode *last;
 	
-	// Linking up/down
-	for (i = 0; i < GRID_SIZE; ++i) {
+	// Looping over each mirror field
+	for (k = 0; k < MIRROR_FIELD_COUNT; ++k) {
 
-		last = &perimeter[so_perimeter[i]];
-
-		for (j = i; j < GRID_SIZE * GRID_SIZE; j += GRID_SIZE) {
-			if (gridnodes[j].value < MIRROR_NONE) {
-				last->down = &gridnodes[j];
-				gridnodes[j].up = last;
-				last = &gridnodes[j];
-			}
-			if (j + GRID_SIZE >= GRID_SIZE * GRID_SIZE) {
-				last->down = &perimeter[so_perimeter[i + (GRID_SIZE * 3)]];
-				perimeter[so_perimeter[i + (GRID_SIZE * 3)]].up = last;
-				break;
+		// Linking up/down
+		for (i = 0; i < GRID_SIZE; ++i) {
+	
+			last = &perimeter[k][so_perimeter[k][i]];
+	
+			for (j = i; j < GRID_SIZE * GRID_SIZE; j += GRID_SIZE) {
+				if (gridnodes[k][j].value < MIRROR_NONE) {
+					last->down = &gridnodes[k][j];
+					gridnodes[k][j].up = last;
+					last = &gridnodes[k][j];
+				}
+				if (j + GRID_SIZE >= GRID_SIZE * GRID_SIZE) {
+					last->down = &perimeter[k][so_perimeter[k][i + (GRID_SIZE * 3)]];
+					perimeter[k][so_perimeter[k][i + (GRID_SIZE * 3)]].up = last;
+					break;
+				}
 			}
 		}
-	}
 
-	// Linking right/left
-	for (i = 0; i < GRID_SIZE; ++i) {
-		
-		last = &perimeter[so_perimeter[i + (GRID_SIZE * 2)]];
-		
-		for (j = i * GRID_SIZE; j < (i * GRID_SIZE) + GRID_SIZE; ++j) {
-			if (gridnodes[j].value < MIRROR_NONE) {
-				last->right = &gridnodes[j];
-				gridnodes[j].left = last;
-				last = &gridnodes[j];
-			}
-			if (j + 1 >= (i * GRID_SIZE) + GRID_SIZE) {
-				last->right = &perimeter[so_perimeter[i + GRID_SIZE]];
-				perimeter[so_perimeter[i + GRID_SIZE]].left = last;
-				break;
+
+		// Linking right/left
+		for (i = 0; i < GRID_SIZE; ++i) {
+			
+			last = &perimeter[k][so_perimeter[k][i + (GRID_SIZE * 2)]];
+			
+			for (j = i * GRID_SIZE; j < (i * GRID_SIZE) + GRID_SIZE; ++j) {
+				if (gridnodes[k][j].value < MIRROR_NONE) {
+					last->right = &gridnodes[k][j];
+					gridnodes[k][j].left = last;
+					last = &gridnodes[k][j];
+				}
+				if (j + 1 >= (i * GRID_SIZE) + GRID_SIZE) {
+					last->right = &perimeter[k][so_perimeter[k][i + GRID_SIZE]];
+					perimeter[k][so_perimeter[k][i + GRID_SIZE]].left = last;
+					break;
+				}
 			}
 		}
+
 	}
 }
-*/
+
 /*
  * The mirrorfield_crypt_char() function receives a cleartext character
  * and traverses the mirror field to find it's cyphertext equivelent,

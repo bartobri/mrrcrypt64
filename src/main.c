@@ -82,14 +82,11 @@ int main(int argc, char *argv[]) {
 	// Validate mirror field contents
 	if (mirrorfield_validate() == 0)
 		main_shutdown("Key file error. Invalid content.");
-		
-	return 0;
-	
-	/*
 
 	// Create grid links
 	mirrorfield_link();
 
+	/*
 	// Loop over input one char at a time and encrypt
 	while ((ch = getchar()) != EOF) {
 		
@@ -106,10 +103,9 @@ int main(int argc, char *argv[]) {
 		
 		putchar(ch);
 	}
+	*/
 
 	return 0;
-	
-	*/
 }
 
 /*
