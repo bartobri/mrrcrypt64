@@ -32,4 +32,9 @@
  */
 #define GRID_SIZE              4
 
+/*
+ * Number of mirror fields to utilize.
+ */
+#define MIRROR_FIELD_COUNT     4
+
 #endif

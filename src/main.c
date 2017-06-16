@@ -82,7 +82,11 @@ int main(int argc, char *argv[]) {
 	// Validate mirror field contents
 	if (mirrorfield_validate() == 0)
 		main_shutdown("Key file error. Invalid content.");
+		
+	return 0;
 	
+	/*
+
 	// Create grid links
 	mirrorfield_link();
 
@@ -104,6 +108,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	return 0;
+	
+	*/
 }
 
 /*

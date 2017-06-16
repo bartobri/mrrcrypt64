@@ -107,7 +107,7 @@ int keyfile_open(char *keyFileName, int autoCreate) {
  * Upon any errors, zero is returned.
  */
 int keyfile_create(char *keyFileFullPathName) {
-	int i, r, c;
+	int i, j, r;
 	int w = 0;
 	struct stat sb;
 	FILE *keyfile;
@@ -137,28 +137,62 @@ int keyfile_create(char *keyFileFullPathName) {
 		return 0;
 
 	// Write mirror data to file
-	for (r = 0; r < GRID_SIZE; ++r) {
-		for (c = 0; c < GRID_SIZE; ++c) {
+	for (i = 0; i < MIRROR_FIELD_COUNT * GRID_SIZE * GRID_SIZE; ++i) {
+	
+		// Randomly generate mirror char
+		switch (fgetc(urandom) % MIRROR_DENSITY) {
+			case 1:
+				contents.decoded[contents.index++] = '/';
+				break;
+			case 2:
+				contents.decoded[contents.index++] = '\\';
+				break;
+			default:
+				contents.decoded[contents.index++] = ' ';
+				break;
+		}
 
-			// Randomly generate mirror char
-			switch (fgetc(urandom) % MIRROR_DENSITY) {
-				case 1:
-					contents.decoded[contents.index++] = '/';
-					break;
-				case 2:
-					contents.decoded[contents.index++] = '\\';
-					break;
-				default:
-					contents.decoded[contents.index++] = ' ';
-					break;
+		// If we have max input for the base64 encoder, encode it
+		if (contents.index == BASE64_DECODED_COUNT) {
+			contents = base64_encode(contents);
+			fprintf(keyfile, "%c%c%c%c", contents.encoded[0], contents.encoded[1], contents.encoded[2], contents.encoded[3]);
+			contents.index = 0;
+
+			// Newline after every 72 chars (18 * 4)
+			if (++w % 18 == 0)
+				fprintf(keyfile, "\n");
+		}
+	}
+	
+	// Write perimeter character data to file
+	for (j = 0; j < MIRROR_FIELD_COUNT; ++j) {
+
+		// init all perimeter chars to zero
+		memset(perimeterChars, 0, GRID_SIZE * 4);
+		
+		// Generate perimeter characters in random placements
+		for (i = 1; i < GRID_SIZE * 4; i++) {
+			r = fgetc(urandom) % (GRID_SIZE * 4);
+			if (r % 2 == 0) {
+				while (perimeterChars[r] > 0) {
+					r = (r + 1) % (GRID_SIZE * 4);
+				}
+			} else {
+				while (perimeterChars[r] > 0) {
+					r = (r + (GRID_SIZE * 4) - 1) % (GRID_SIZE * 4);
+				}
 			}
-
-			// If we have max input for the base64 encoder, encode it
+			perimeterChars[r] = i;
+		}
+		
+		// Encode perimeter chars to base64 and write to key file
+		for (i = 0; i < GRID_SIZE * 4; ++i) {
+			contents.decoded[contents.index++] = perimeterChars[i];
 			if (contents.index == BASE64_DECODED_COUNT) {
 				contents = base64_encode(contents);
 				fprintf(keyfile, "%c%c%c%c", contents.encoded[0], contents.encoded[1], contents.encoded[2], contents.encoded[3]);
 				contents.index = 0;
-
+				
 				// Newline after every 72 chars (18 * 4)
 				if (++w % 18 == 0)
 					fprintf(keyfile, "\n");
@@ -166,40 +200,6 @@ int keyfile_create(char *keyFileFullPathName) {
 		}
 	}
 	
-	// init all perimeter chars to zero
-	memset(perimeterChars, 0, GRID_SIZE * 4);
-	
-	// Generate perimeter characters in random placements
-	for (i = 1; i < GRID_SIZE * 4; i++) {
-		r = fgetc(urandom) % (GRID_SIZE * 4);
-		if (r % 2 == 0) {
-			while (perimeterChars[r] > 0) {
-				r = (r + 1) % (GRID_SIZE * 4);
-			}
-		} else {
-			while (perimeterChars[r] > 0) {
-				r = (r + (GRID_SIZE * 4) - 1) % (GRID_SIZE * 4);
-			}
-		}
-		perimeterChars[r] = i;
-	}
-	
-	// Close urandom resource
-	fclose(urandom);
-	
-	// Encode perimeter chars to base64 and write to key file
-	for (i = 0; i < GRID_SIZE * 4; ++i) {
-		contents.decoded[contents.index++] = perimeterChars[i];
-		if (contents.index == BASE64_DECODED_COUNT) {
-			contents = base64_encode(contents);
-			fprintf(keyfile, "%c%c%c%c", contents.encoded[0], contents.encoded[1], contents.encoded[2], contents.encoded[3]);
-			contents.index = 0;
-			
-			// Newline after every 72 chars (18 * 4)
-			if (++w % 18 == 0)
-				fprintf(keyfile, "\n");
-		}
-	}
 	if (contents.index > 0) {
 		contents = base64_encode(contents);
 		fprintf(keyfile, "%c%c%c%c", contents.encoded[0], contents.encoded[1], contents.encoded[2], contents.encoded[3]);
@@ -208,6 +208,9 @@ int keyfile_create(char *keyFileFullPathName) {
 		if (++w % 18 == 0)
 			fprintf(keyfile, "\n");
 	}
+	
+	// Close urandom resource
+	fclose(urandom);
 	
 	// Close mirror file
 	fclose(keyfile);

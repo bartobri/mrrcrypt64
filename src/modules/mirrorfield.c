@@ -39,37 +39,40 @@ struct gridnode {
 	struct gridnode *left;
 	struct gridnode *right;
 };
-static struct gridnode gridnodes[GRID_SIZE * GRID_SIZE];
-static struct gridnode perimeter[GRID_SIZE * 4];
-static int so_perimeter[GRID_SIZE * 4];
+static struct gridnode gridnodes[MIRROR_FIELD_COUNT][GRID_SIZE * GRID_SIZE];
+static struct gridnode perimeter[MIRROR_FIELD_COUNT][GRID_SIZE * 4];
+static int so_perimeter[MIRROR_FIELD_COUNT][GRID_SIZE * 4];
 
 // Static Function Prototypes
-static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *, int, int);
-static void mirrorfield_roll_chars(struct gridnode *, struct gridnode *);
-static void mirrorfield_draw(struct gridnode *);
+//static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *, int, int);
+//static void mirrorfield_roll_chars(struct gridnode *, struct gridnode *);
+//static void mirrorfield_draw(struct gridnode *);
 
 /*
  * The mirrorfield_init() function initializes any static variables.
  */
 void mirrorfield_init(void) {
-	int i;
+	int i, j;
 	
-	// Init gridnode values
-	for (i = 0; i < GRID_SIZE * GRID_SIZE; ++i) {
-		gridnodes[i].value = 0;
-		gridnodes[i].up = NULL;
-		gridnodes[i].down = NULL;
-		gridnodes[i].left = NULL;
-		gridnodes[i].right = NULL;
-	}
-	
-	// Init perimeter values
-	for (i = 0; i < GRID_SIZE * 4; ++i) {
-		perimeter[i].value = 0;
-		perimeter[i].up = NULL;
-		perimeter[i].down = NULL;
-		perimeter[i].left = NULL;
-		perimeter[i].right = NULL;
+	for (j = 0; j <= MIRROR_FIELD_COUNT; ++j) {
+
+		// Init gridnode values
+		for (i = 0; i < GRID_SIZE * GRID_SIZE; ++i) {
+			gridnodes[j][i].value = 0;
+			gridnodes[j][i].up = NULL;
+			gridnodes[j][i].down = NULL;
+			gridnodes[j][i].left = NULL;
+			gridnodes[j][i].right = NULL;
+		}
+		
+		// Init perimeter values
+		for (i = 0; i < GRID_SIZE * 4; ++i) {
+			perimeter[j][i].value = 0;
+			perimeter[j][i].up = NULL;
+			perimeter[j][i].down = NULL;
+			perimeter[j][i].left = NULL;
+			perimeter[j][i].right = NULL;
+		}
 	}
 }
 
@@ -83,32 +86,40 @@ void mirrorfield_init(void) {
  */
 int mirrorfield_set(unsigned char ch) {
 	static int i = 0;
+	static int j = 0;
 	
-	// Ste mirror values
-	if (i < GRID_SIZE * GRID_SIZE) {
+	// Set mirror values
+	if (i < GRID_SIZE * GRID_SIZE * MIRROR_FIELD_COUNT) {
+
+		// Set mirror field index
+		j = i / (GRID_SIZE * GRID_SIZE);
 	
 		// Set mirror value
 		if (ch == '/') {
-			gridnodes[i].value = MIRROR_FORWARD;
+			gridnodes[j][i % (GRID_SIZE * GRID_SIZE)].value = MIRROR_FORWARD;
 		} else if (ch == '\\') {
-			gridnodes[i].value = MIRROR_BACKWARD;
+			gridnodes[j][i % (GRID_SIZE * GRID_SIZE)].value = MIRROR_BACKWARD;
 		} else if (ch == '-') {
-			gridnodes[i].value = MIRROR_STRAIGHT;
+			gridnodes[j][i % (GRID_SIZE * GRID_SIZE)].value = MIRROR_STRAIGHT;
 		} else if (ch == ' ') {
-			gridnodes[i].value = MIRROR_NONE;
+			gridnodes[j][i % (GRID_SIZE * GRID_SIZE)].value = MIRROR_NONE;
 		} else {
 			return 0;
 		}
+
 	}
 	
 	// Set perimiter values
-	else if (i < (GRID_SIZE * GRID_SIZE) + (GRID_SIZE * 4)) {
+	else if (i < (GRID_SIZE * GRID_SIZE * MIRROR_FIELD_COUNT) + (GRID_SIZE * 4 * MIRROR_FIELD_COUNT)) {
+		
+		// Set mirror field index
+		j = (i - (GRID_SIZE * GRID_SIZE * MIRROR_FIELD_COUNT)) / (GRID_SIZE * 4);
 		
 		// Store order of perimeter characters
-		so_perimeter[i - (GRID_SIZE * GRID_SIZE)] = (int)ch;
+		so_perimeter[j][(i - (GRID_SIZE * GRID_SIZE * MIRROR_FIELD_COUNT)) % (GRID_SIZE * 4)] = (int)ch;
 		
 		// Setting perimeter value by index
-		perimeter[(int)ch].value = (int)ch;
+		perimeter[j][(int)ch].value = (int)ch;
 	} 
 	
 	// Ignore extra characters
@@ -130,23 +141,27 @@ int mirrorfield_set(unsigned char ch) {
  * Zero is returned if invalid.
  */
 int mirrorfield_validate(void) {
-	int i, j;
+	int i, j, k;
 
 	// Check mirrors
-	for (i = 0; i < GRID_SIZE * GRID_SIZE; ++i) {
-		if (gridnodes[i].value > MIRROR_NONE || gridnodes[i].value < MIRROR_BACKWARD) {
-			return 0;
+	for (k = 0; k < MIRROR_FIELD_COUNT; ++k) {
+		for (i = 0; i < GRID_SIZE * GRID_SIZE; ++i) {
+			if (gridnodes[k][i].value > MIRROR_NONE || gridnodes[k][i].value < MIRROR_BACKWARD) {
+				return 0;
+			}
 		}
 	}
 	
 	// Check for duplicate perimeter chars
-	for (i = 0; i < GRID_SIZE * 4; ++i) {
-		for (j = i+1; j < GRID_SIZE * 4; ++j) {
-			if (perimeter[i].value == perimeter[j].value) {
-				return 0;
-			}
-			if (so_perimeter[i] == so_perimeter[j]) {
-				return 0;
+	for (k = 0; k < MIRROR_FIELD_COUNT; ++k) {
+		for (i = 0; i < GRID_SIZE * 4; ++i) {
+			for (j = i+1; j < GRID_SIZE * 4; ++j) {
+				if (perimeter[k][i].value == perimeter[k][j].value) {
+					return 0;
+				}
+				if (so_perimeter[k][i] == so_perimeter[k][j]) {
+					return 0;
+				}
 			}
 		}
 	}
@@ -158,6 +173,7 @@ int mirrorfield_validate(void) {
  * The mirrorfield_link() function creates links between nodes to speed
  * up the encryption/decryption process.
  */
+/*
 void mirrorfield_link(void) {
 	int i, j;
 	struct gridnode *last;
@@ -200,13 +216,14 @@ void mirrorfield_link(void) {
 		}
 	}
 }
-
+*/
 /*
  * The mirrorfield_crypt_char() function receives a cleartext character
  * and traverses the mirror field to find it's cyphertext equivelent,
  * which is then returned. It also calls mirrorfield_roll_chars() after
  * the cyphertext character is determined.
  */
+/*
 unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	int d;
 	struct gridnode *startnode = &perimeter[(int)ch];
@@ -241,12 +258,13 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	// Return crypted char
 	return (unsigned char)endnode->value;
 }
-
+*/
 /*
  * The mirrorfield_crypt_char_advance() is a recursive function that traverses
  * the mirror field and returns a pointer to the node containing the cypthertext
  * character. This function also handles mirror rotation.
  */
+/*
 static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d, int debug) {
 	struct gridnode *t;
 	
@@ -339,13 +357,14 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
 	// Return cyphertext node
 	return p;
 }
-
+*/
 /*
  * The mirrorfield_roll_chars() function received the starting and ending
  * nodes of the cleartext and cyphertext character respectively, and
  * implements a character rolling process to reposition the nodes and
  * increase randomness in the output. No value is returned.
  */
+/*
 static void mirrorfield_roll_chars(struct gridnode *startnode, struct gridnode *endnode) {
 	int i = 1;
 	static int j = 0;
@@ -501,12 +520,13 @@ static void mirrorfield_roll_chars(struct gridnode *startnode, struct gridnode *
 
 	return;
 }
-
+*/
 /*
  * The mirrorfield_draw() function draws the current state of the mirror
  * field and perimeter characters. It receives x/y coordinates and highlights
  * that position on the field.
  */
+/*
 static void mirrorfield_draw(struct gridnode *p) {
 	int r, c, i;
 	static int resetCursor = 0;
@@ -585,4 +605,4 @@ static void mirrorfield_draw(struct gridnode *p) {
 	else
 		resetCursor = 1;
 }
-
+*/
