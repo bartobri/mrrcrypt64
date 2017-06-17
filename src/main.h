@@ -35,6 +35,6 @@
 /*
  * Number of mirror fields to utilize.
  */
-#define MIRROR_FIELD_COUNT     4
+#define MIRROR_FIELD_COUNT     3
 
 #endif

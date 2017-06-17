@@ -8,7 +8,7 @@
 
 void show_stats(void);
 
-static int data[GRID_SIZE*4];
+static int data[256];
 
 int main(int argc, char *argv[]) {
 	int ch, c = 0, o;
@@ -55,22 +55,22 @@ void show_stats(void) {
 	int high = 0, low = 0, diff = 0;
 	float diffpct;
 	
-	for (i = 0; i < GRID_SIZE*4; ++i) {
+	for (i = 0; i < 256; ++i) {
 		if (data[i] > high) {
 			high = data[i];
 		}
 	}
 	low = high;
-	for (i = 0; i < GRID_SIZE*4; ++i) {
+	for (i = 0; i < 256; ++i) {
 		if (data[i] < low) {
 			low = data[i];
 		}
 	}
 	diff = high - low;
 	
-	for (i = 0; i < GRID_SIZE*4; ++i) {
-		printf("%i => %i\n", i, data[i]);
-	}
+	//for (i = 0; i < 256; ++i) {
+	//	printf("%i => %i\n", i, data[i]);
+	//}
 	
 	diffpct = ((float)diff / (float)high) * 100;
 	
