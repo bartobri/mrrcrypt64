@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
 		// Assemble right and left results back into a byte
 		ch = (l << 4) + r;
 		
+		// Print char
 		putchar(ch);
 	}
 

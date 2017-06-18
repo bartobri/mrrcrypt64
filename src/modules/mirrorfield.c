@@ -44,7 +44,7 @@ static struct gridnode perimeter[MIRROR_FIELD_COUNT][GRID_SIZE * 4];
 
 // Static Function Prototypes
 static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *, int, int, int);
-static void mirrorfield_roll_chars(struct gridnode *, struct gridnode *, int);
+static void mirrorfield_roll_chars(int, int, int);
 static void mirrorfield_draw(struct gridnode *, int);
 
 /*
@@ -188,7 +188,6 @@ void mirrorfield_link(void) {
 			perimeter[k][i + (GRID_SIZE * 2)].up = temp;
 		}
 
-
 		// Linking right/left
 		for (i = 0; i < GRID_SIZE; ++i) {
 			
@@ -215,6 +214,7 @@ void mirrorfield_link(void) {
  */
 unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	int i, d;
+	unsigned char sv, ev;
 	struct gridnode *startnode = NULL;
 	struct gridnode *endnode = NULL;
 	static int m = 0;
@@ -243,23 +243,26 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	// Traverse the mirror field and find the cyphertext node
 	endnode = mirrorfield_crypt_char_advance(startnode, d, m, debug);
 	
-	// Roll start and end chars
-	//mirrorfield_roll_chars(startnode, endnode, m);
+	// Store start/end values before we roll them
+	sv = startnode->value;
+	ev = endnode->value;
 	
-	// This is a way of returning the cleartext char as the cyphertext char and still preserve decryption.
-	pi = (pi + 1) % 2;
-	if ((endnode->value + startnode->value) % (GRID_SIZE * 4) == p[pi]) {
-		p[pi] = endnode->value > startnode->value ? endnode->value : startnode->value;
-		endnode = startnode;
-	} else {
-		p[pi] = endnode->value > startnode->value ? endnode->value : startnode->value;
-	}
+	// Roll start and end values
+	mirrorfield_roll_chars(sv, ev, m);
 	
 	// Cycle mirror field index
 	m = (m + 1) % MIRROR_FIELD_COUNT;
-
-	// Return crypted char
-	return (unsigned char)endnode->value;
+	
+	// This is a way of returning the cleartext char as the cyphertext
+	// char and still preserve decryption.
+	pi = (pi + 1) % 2;
+	if ((ev + sv) % (GRID_SIZE * 4) == p[pi]) {
+		p[pi] = ev > sv ? ev : sv;
+		return sv;
+	} else {
+		p[pi] = ev > sv ? ev : sv;
+		return ev;
+	}
 }
 
 /*
@@ -366,159 +369,41 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
  * implements a character rolling process to reposition the nodes and
  * increase randomness in the output. No value is returned.
  */
-static void mirrorfield_roll_chars(struct gridnode *startnode, struct gridnode *endnode, int m) {
-	int i = 1;
-	static int j = 0;
-	struct gridnode *rollstart;
-	struct gridnode *rollend;
-	struct gridnode temp;
-
-	do {
-		rollstart = &perimeter[m][(startnode->value + j + i) % (GRID_SIZE * 4)];
-		rollend = &perimeter[m][(endnode->value + j + i) % (GRID_SIZE * 4)];
-		++i;
-	} while (rollstart == endnode || rollend == startnode);
+static void mirrorfield_roll_chars(int s, int e, int m) {
+	int i, n, r, t, x;
+	int p = 13;
 	
-	j = (j + 1) % (GRID_SIZE * 4);
-	
-	if (startnode->value > endnode->value) {
-		// roll start node
-		if (startnode->up != NULL)
-			startnode->up->down = rollstart;
-		if (startnode->down != NULL)
-			startnode->down->up = rollstart;
-		if (startnode->left != NULL)
-			startnode->left->right = rollstart;
-		if (startnode->right != NULL)
-			startnode->right->left = rollstart;
-		
-		if (rollstart->up != NULL)
-			rollstart->up->down = startnode;
-		if (rollstart->down != NULL)
-			rollstart->down->up = startnode;
-		if (rollstart->left != NULL)
-			rollstart->left->right = startnode;
-		if (rollstart->right != NULL)
-			rollstart->right->left = startnode;
-		
-		temp.up = startnode->up;
-		temp.down = startnode->down;
-		temp.left = startnode->left;
-		temp.right = startnode->right;
-		
-		startnode->up = rollstart->up;
-		startnode->down = rollstart->down;
-		startnode->left = rollstart->left;
-		startnode->right = rollstart->right;
-		
-		rollstart->up = temp.up;
-		rollstart->down = temp.down;
-		rollstart->left = temp.left;
-		rollstart->right = temp.right;
-		
-		// roll end node
-		if (endnode->up != NULL)
-			endnode->up->down = rollend;
-		if (endnode->down != NULL)
-			endnode->down->up = rollend;
-		if (endnode->left != NULL)
-			endnode->left->right = rollend;
-		if (endnode->right != NULL)
-			endnode->right->left = rollend;
-		
-		if (rollend->up != NULL)
-			rollend->up->down = endnode;
-		if (rollend->down != NULL)
-			rollend->down->up = endnode;
-		if (rollend->left != NULL)
-			rollend->left->right = endnode;
-		if (rollend->right != NULL)
-			rollend->right->left = endnode;
-
-		temp.up = endnode->up;
-		temp.down = endnode->down;
-		temp.left = endnode->left;
-		temp.right = endnode->right;
-		
-		endnode->up = rollend->up;
-		endnode->down = rollend->down;
-		endnode->left = rollend->left;
-		endnode->right = rollend->right;
-		
-		rollend->up = temp.up;
-		rollend->down = temp.down;
-		rollend->left = temp.left;
-		rollend->right = temp.right;
+	// Gett bigger
+	if (perimeter[m][s].value > perimeter[m][e].value) {
+		x = s;
 	} else {
-		// roll end node
-		if (endnode->up != NULL)
-			endnode->up->down = rollend;
-		if (endnode->down != NULL)
-			endnode->down->up = rollend;
-		if (endnode->left != NULL)
-			endnode->left->right = rollend;
-		if (endnode->right != NULL)
-			endnode->right->left = rollend;
-		
-		if (rollend->up != NULL)
-			rollend->up->down = endnode;
-		if (rollend->down != NULL)
-			rollend->down->up = endnode;
-		if (rollend->left != NULL)
-			rollend->left->right = endnode;
-		if (rollend->right != NULL)
-			rollend->right->left = endnode;
-
-		temp.up = endnode->up;
-		temp.down = endnode->down;
-		temp.left = endnode->left;
-		temp.right = endnode->right;
-		
-		endnode->up = rollend->up;
-		endnode->down = rollend->down;
-		endnode->left = rollend->left;
-		endnode->right = rollend->right;
-		
-		rollend->up = temp.up;
-		rollend->down = temp.down;
-		rollend->left = temp.left;
-		rollend->right = temp.right;
-		
-		// roll start node
-		if (startnode->up != NULL)
-			startnode->up->down = rollstart;
-		if (startnode->down != NULL)
-			startnode->down->up = rollstart;
-		if (startnode->left != NULL)
-			startnode->left->right = rollstart;
-		if (startnode->right != NULL)
-			startnode->right->left = rollstart;
-		
-		if (rollstart->up != NULL)
-			rollstart->up->down = startnode;
-		if (rollstart->down != NULL)
-			rollstart->down->up = startnode;
-		if (rollstart->left != NULL)
-			rollstart->left->right = startnode;
-		if (rollstart->right != NULL)
-			rollstart->right->left = startnode;
-
-		temp.up = startnode->up;
-		temp.down = startnode->down;
-		temp.left = startnode->left;
-		temp.right = startnode->right;
-		
-		startnode->up = rollstart->up;
-		startnode->down = rollstart->down;
-		startnode->left = rollstart->left;
-		startnode->right = rollstart->right;
-		
-		rollstart->up = temp.up;
-		rollstart->down = temp.down;
-		rollstart->left = temp.left;
-		rollstart->right = temp.right;
+		x = e;
 	}
 
+	// Get perimeter index for value x
+	for (i = 0; perimeter[m][i].value != x; ++i);
+		;
+	
+	// Get next index
+	n = (i + 1) % (GRID_SIZE * 4);
+	
+	// Multiply x by the next index value, and mod p, to get number of
+	// positions to rotate
+	r = (x * perimeter[m][n].value) % p;
+	
+	// Always move at least 1 position
+	if (r == 0) {
+		r = 1;
+	}
+	
+	// Get the new position index
+	r = (r + i) % (GRID_SIZE * 4);
+	
+	// Rotate x to new position.
+	t = perimeter[m][i].value;
+	perimeter[m][i].value = perimeter[m][r].value;
+	perimeter[m][r].value = t;
+	
 	return;
 }
 
@@ -561,13 +446,13 @@ static void mirrorfield_draw(struct gridnode *p, int m) {
 			} else if (r == GRID_SIZE && c == GRID_SIZE) {   // Lower right corner
 				printf("%2c", ' ');
 			} else if (r == -1) {                            // Top chars
-				printf("%2x", perimeter[m][c].value);
+				printf("%2x", gridnodes[m][c].up->value);
 			} else if (c == GRID_SIZE) {                     // Right chars
-				printf("%2x", perimeter[m][r + GRID_SIZE].value);
+				printf("%2x", gridnodes[m][(r * GRID_SIZE) + (GRID_SIZE-1)].right->value);
 			} else if (r == GRID_SIZE) {                     // Bottom chars
-				printf("%2x", perimeter[m][c + (GRID_SIZE * 2)].value);
+				printf("%2x", gridnodes[m][c + (GRID_SIZE * 3)].down->value);
 			} else if (c == -1) {                            // Left chars
-				printf("%2x", perimeter[m][r + (GRID_SIZE * 3)].value);
+				printf("%2x", gridnodes[m][r * GRID_SIZE].left->value);
 			} else if (gridnodes[m][(r * GRID_SIZE) + c].value == MIRROR_FORWARD) {
 				printf("%2c", '/');
 			} else if (gridnodes[m][(r * GRID_SIZE) + c].value == MIRROR_BACKWARD) {
