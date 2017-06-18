@@ -371,9 +371,10 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
  */
 static void mirrorfield_roll_chars(int s, int e, int m) {
 	int i, n, r, t, x;
-	int p = 13;
+	//int p = 13;
+	static int g = 1;
 	
-	// Gett bigger
+	// Get value to rotate
 	if (perimeter[m][s].value > perimeter[m][e].value) {
 		x = s;
 	} else {
@@ -385,24 +386,28 @@ static void mirrorfield_roll_chars(int s, int e, int m) {
 		;
 	
 	// Get next index
-	n = (i + 1) % (GRID_SIZE * 4);
+	//n = (i + 1) % (GRID_SIZE * 4);
 	
 	// Multiply x by the next index value, and mod p, to get number of
 	// positions to rotate
-	r = (x * perimeter[m][n].value) % p;
+	//r = (x * perimeter[m][n].value) % GRID_SIZE;
 	
 	// Always move at least 1 position
-	if (r == 0) {
-		r = 1;
-	}
+	//if (r == 0) {
+	//	r = 1;
+	//}
 	
 	// Get the new position index
-	r = (r + i) % (GRID_SIZE * 4);
+	r = (g + i) % (GRID_SIZE * 4);
 	
 	// Rotate x to new position.
 	t = perimeter[m][i].value;
 	perimeter[m][i].value = perimeter[m][r].value;
 	perimeter[m][r].value = t;
+	
+	g = (g + 1) % (GRID_SIZE * 4);
+	if (g == 0)
+		g = 1;
 	
 	return;
 }
