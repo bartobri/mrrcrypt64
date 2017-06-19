@@ -214,11 +214,10 @@ void mirrorfield_link(void) {
  */
 unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	int i, d;
-	unsigned char sv, ev;
+	unsigned char sv, ev, rv;
 	struct gridnode *startnode = NULL;
 	struct gridnode *endnode = NULL;
 	static int m = 0;
-	static int p = 0;
 	
 	// Get starting node
 	for (i = 0; i < GRID_SIZE * 4; ++i) {
@@ -245,6 +244,13 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	// Store start/end values before we roll them
 	sv = startnode->value;
 	ev = endnode->value;
+	rv = ev;
+	
+	// This is a way of returning the cleartext char as the cyphertext
+	// char and still preserve decryption.
+	if (perimeter[m][(ev + sv) % (GRID_SIZE * 4)].value == (ev + sv) % (GRID_SIZE * 4)) {
+		rv = sv;
+	}
 	
 	// Roll start and end values
 	mirrorfield_roll_chars(sv, ev, m);
@@ -252,16 +258,7 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	// Cycle mirror field index
 	m = (m + 1) % MIRROR_FIELD_COUNT;
 	
-	// This is a way of returning the cleartext char as the cyphertext
-	// char and still preserve decryption.
-	if ((ev + sv) % (GRID_SIZE * 4) == p) {
-		p = ev > sv ? ev : sv;
-		ev = sv;
-	} else {
-		p = ev > sv ? ev : sv;
-	}
-	
-	return ev;
+	return rv;
 }
 
 /*
@@ -369,30 +366,37 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
  * increase randomness in the output. No value is returned.
  */
 static void mirrorfield_roll_chars(int s, int e, int m) {
-	int i, n, r, t, x;
-	static int g[MIRROR_FIELD_COUNT];
-	
-	// The g[] array holds the number of positions we roll
-	g[m] = (g[m] + 1) % (GRID_SIZE * 4);
+	int i, t, x;
+	static int g = 0;
+	static int c = 0;
 	
 	// Get value to rotate
 	if (perimeter[m][s].value > perimeter[m][e].value) {
 		x = s;
+		if (perimeter[m][e].value == e) {
+			x = e;
+		}
 	} else {
 		x = e;
+		if (perimeter[m][s].value == s) {
+			x = s;
+		}
 	}
 
 	// Get perimeter index for value x
 	for (i = 0; perimeter[m][i].value != x; ++i);
 		;
 	
-	// Get the new position index
-	r = (g[m] + i) % (GRID_SIZE * 4);
-	
 	// Rotate x to new position.
 	t = perimeter[m][i].value;
-	perimeter[m][i].value = perimeter[m][r].value;
-	perimeter[m][r].value = t;
+	perimeter[m][i].value = perimeter[m][g].value;
+	perimeter[m][g].value = t;
+	
+	// The g holds the roll position
+	if (++c == MIRROR_FIELD_COUNT) {
+		g = (g + 1) % (GRID_SIZE * 4);
+		c = 0;
+	}
 	
 	return;
 }
