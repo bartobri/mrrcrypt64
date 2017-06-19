@@ -53,7 +53,7 @@ static void mirrorfield_draw(struct gridnode *, int);
 void mirrorfield_init(void) {
 	int i, j;
 	
-	for (j = 0; j <= MIRROR_FIELD_COUNT; ++j) {
+	for (j = 0; j < MIRROR_FIELD_COUNT; ++j) {
 
 		// Init gridnode values
 		for (i = 0; i < GRID_SIZE * GRID_SIZE; ++i) {
