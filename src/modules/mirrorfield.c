@@ -218,8 +218,7 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	struct gridnode *startnode = NULL;
 	struct gridnode *endnode = NULL;
 	static int m = 0;
-	static int p[2] = {0,0};
-	static int pi = 0;
+	static int p = 0;
 	
 	// Get starting node
 	for (i = 0; i < GRID_SIZE * 4; ++i) {
@@ -255,14 +254,14 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	
 	// This is a way of returning the cleartext char as the cyphertext
 	// char and still preserve decryption.
-	pi = (pi + 1) % 2;
-	if ((ev + sv) % (GRID_SIZE * 4) == p[pi]) {
-		p[pi] = ev > sv ? ev : sv;
-		return sv;
+	if ((ev + sv) % (GRID_SIZE * 4) == p) {
+		p = ev > sv ? ev : sv;
+		ev = sv;
 	} else {
-		p[pi] = ev > sv ? ev : sv;
-		return ev;
+		p = ev > sv ? ev : sv;
 	}
+	
+	return ev;
 }
 
 /*
@@ -371,8 +370,10 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
  */
 static void mirrorfield_roll_chars(int s, int e, int m) {
 	int i, n, r, t, x;
-	//int p = 13;
-	static int g = 1;
+	static int g[MIRROR_FIELD_COUNT];
+	
+	// The g[] array holds the number of positions we roll
+	g[m] = (g[m] + 1) % (GRID_SIZE * 4);
 	
 	// Get value to rotate
 	if (perimeter[m][s].value > perimeter[m][e].value) {
@@ -385,29 +386,13 @@ static void mirrorfield_roll_chars(int s, int e, int m) {
 	for (i = 0; perimeter[m][i].value != x; ++i);
 		;
 	
-	// Get next index
-	//n = (i + 1) % (GRID_SIZE * 4);
-	
-	// Multiply x by the next index value, and mod p, to get number of
-	// positions to rotate
-	//r = (x * perimeter[m][n].value) % GRID_SIZE;
-	
-	// Always move at least 1 position
-	//if (r == 0) {
-	//	r = 1;
-	//}
-	
 	// Get the new position index
-	r = (g + i) % (GRID_SIZE * 4);
+	r = (g[m] + i) % (GRID_SIZE * 4);
 	
 	// Rotate x to new position.
 	t = perimeter[m][i].value;
 	perimeter[m][i].value = perimeter[m][r].value;
 	perimeter[m][r].value = t;
-	
-	g = (g + 1) % (GRID_SIZE * 4);
-	if (g == 0)
-		g = 1;
 	
 	return;
 }
