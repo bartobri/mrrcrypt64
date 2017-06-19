@@ -141,10 +141,10 @@ int keyfile_create(char *keyFileFullPathName) {
 	
 		// Randomly generate mirror char
 		switch (fgetc(urandom) % MIRROR_DENSITY) {
-			case 1:
+			case 0:
 				contents.decoded[contents.index++] = '/';
 				break;
-			case 2:
+			case 1:
 				contents.decoded[contents.index++] = '\\';
 				break;
 			default:
