@@ -30,6 +30,9 @@ mrrcrypt: $(OBJ_MODS)/base64.o $(OBJ_MODS)/keyfile.o $(OBJ_MODS)/mirrorfield.o $
 show: $(OBJ)/show.o | $(BIN)
 	$(CC) $(CFLAGS) -o $(BIN)/$@ $^
 
+show256: $(OBJ)/show256.o | $(BIN)
+	$(CC) $(CFLAGS) -o $(BIN)/$@ $^
+
 $(OBJ)/%.o: $(SRC)/%.c | $(OBJ_MODS)
 	$(CC) $(CFLAGS) -o $@ -c $<
 	
