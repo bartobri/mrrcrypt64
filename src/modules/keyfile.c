@@ -23,8 +23,6 @@
  * the key itself.
  */
 
-#define MIRROR_DENSITY   4
-
 // Static variables
 static FILE *keyFile;
 
@@ -140,7 +138,7 @@ int keyfile_create(char *keyFileFullPathName) {
 	for (i = 0; i < MIRROR_FIELD_COUNT * GRID_SIZE * GRID_SIZE; ++i) {
 	
 		// Randomly generate mirror char
-		switch (fgetc(urandom) % MIRROR_DENSITY) {
+		switch (fgetc(urandom) % 3) {
 			case 0:
 				contents.decoded[contents.index++] = '/';
 				break;
@@ -148,7 +146,7 @@ int keyfile_create(char *keyFileFullPathName) {
 				contents.decoded[contents.index++] = '\\';
 				break;
 			default:
-				contents.decoded[contents.index++] = ' ';
+				contents.decoded[contents.index++] = '-';
 				break;
 		}
 
