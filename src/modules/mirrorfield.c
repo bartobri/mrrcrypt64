@@ -213,7 +213,7 @@ void mirrorfield_link(void) {
  * the cyphertext character is determined.
  */
 unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
-	int i, d;
+	int i, d, t;
 	unsigned char sv, ev, rv;
 	struct gridnode *startnode = NULL;
 	struct gridnode *endnode = NULL;
@@ -246,14 +246,15 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	ev = endnode->value;
 	rv = ev;
 	
-	// This is a way of returning the cleartext char as the cyphertext
-	// char and still preserve decryption.
-	if (perimeter[m][(ev + sv) % (GRID_SIZE * 4)].value == (ev + sv) % (GRID_SIZE * 4)) {
-		rv = sv;
-	}
-	
 	// Roll start and end values
 	mirrorfield_roll_chars(sv, ev, m);
+	
+	// This is a way of returning the cleartext char as the cyphertext
+	// char and still preserve decryption.
+	t = perimeter[(m+1)%MIRROR_FIELD_COUNT][(ev+sv)%(GRID_SIZE*4)].value;
+	if (perimeter[m][t].value == t) {
+		rv = sv;
+	}
 	
 	// Cycle mirror field index
 	m = (m + 1) % MIRROR_FIELD_COUNT;
@@ -366,28 +367,31 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
  * increase randomness in the output. No value is returned.
  */
 static void mirrorfield_roll_chars(int s, int e, int m) {
-	int i, t, x;
+	int i, t, x1, x2;
 	static int g = 0;
 	static int c = 0;
 	
 	// Get value to rotate
-	if (perimeter[m][s].value > perimeter[m][e].value) {
-		x = s;
-		if (perimeter[m][e].value == e) {
-			x = e;
-		}
+	if (perimeter[(m+1)%MIRROR_FIELD_COUNT][s].value > perimeter[(m+1)%MIRROR_FIELD_COUNT][e].value) {
+		x1 = s;
+		x2 = e;
 	} else {
-		x = e;
-		if (perimeter[m][s].value == s) {
-			x = s;
-		}
+		x1 = e;
+		x2 = s;
 	}
 
-	// Get perimeter index for value x
-	for (i = 0; perimeter[m][i].value != x; ++i);
+	// Get perimeter index for value x1
+	for (i = 0; perimeter[m][i].value != x1; ++i);
 		;
+	// Rotate x1 to new position.
+	t = perimeter[m][i].value;
+	perimeter[m][i].value = perimeter[m][g].value;
+	perimeter[m][g].value = t;
 	
-	// Rotate x to new position.
+	// Get perimeter index for value x2
+	for (i = 0; perimeter[m][i].value != x2; ++i);
+		;
+	// Rotate x1 to new position.
 	t = perimeter[m][i].value;
 	perimeter[m][i].value = perimeter[m][g].value;
 	perimeter[m][g].value = t;
