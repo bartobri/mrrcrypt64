@@ -8,11 +8,12 @@
 
 void show_stats(void);
 
-static int data[256];
+static int data[GRID_SIZE * 4];
 
 int main(int argc, char *argv[]) {
 	int ch, c = 0, o;
 	int sample = 0;
+	unsigned char l, r;
 	
 	memset(data, 0, sizeof(data));
 	
@@ -32,10 +33,16 @@ int main(int argc, char *argv[]) {
 
 	// Loop over input one char at a time and encrypt
 	while ((ch = getchar()) != EOF) {
-		(data[ch])++;
+		
+		r = (ch & 0x0F);
+		l = (ch >> 4);
+		
+		(data[r])++;
+		(data[l])++;
+		++c;
 		++c;
 		
-		if (sample > 0 && sample == c) {
+		if (sample > 0 && sample <= c) {
 			show_stats();
 			
 			memset(data, 0, sizeof(data));
@@ -55,22 +62,22 @@ void show_stats(void) {
 	int high = 0, low = 0, diff = 0;
 	float diffpct;
 	
-	for (i = 0; i < 256; ++i) {
+	for (i = 0; i < GRID_SIZE * 4; ++i) {
 		if (data[i] > high) {
 			high = data[i];
 		}
 	}
 	low = high;
-	for (i = 0; i < 256; ++i) {
+	for (i = 0; i < GRID_SIZE * 4; ++i) {
 		if (data[i] < low) {
 			low = data[i];
 		}
 	}
 	diff = high - low;
 	
-	//for (i = 0; i < 256; ++i) {
-	//	printf("%i => %i\n", i, data[i]);
-	//}
+	for (i = 0; i < GRID_SIZE * 4; ++i) {
+		printf("%i => %i\n", i, data[i]);
+	}
 	
 	diffpct = ((float)diff / (float)high) * 100;
 	
