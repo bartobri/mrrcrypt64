@@ -368,11 +368,12 @@ static struct gridnode *mirrorfield_crypt_char_advance(struct gridnode *p, int d
  */
 static void mirrorfield_roll_chars(int s, int e, int m) {
 	int i, t, x1, x2;
-	static int g = 0;
+	static int g1 = 0;
+	static int g2 = GRID_SIZE * 2;
 	static int c = 0;
 	
 	// Get value to rotate
-	if (perimeter[(m+1)%MIRROR_FIELD_COUNT][s].value > perimeter[(m+1)%MIRROR_FIELD_COUNT][e].value) {
+	if (perimeter[m][s].value > perimeter[m][e].value) {
 		x1 = s;
 		x2 = e;
 	} else {
@@ -385,20 +386,21 @@ static void mirrorfield_roll_chars(int s, int e, int m) {
 		;
 	// Rotate x1 to new position.
 	t = perimeter[m][i].value;
-	perimeter[m][i].value = perimeter[m][g].value;
-	perimeter[m][g].value = t;
+	perimeter[m][i].value = perimeter[m][g1].value;
+	perimeter[m][g1].value = t;
 	
 	// Get perimeter index for value x2
 	for (i = 0; perimeter[m][i].value != x2; ++i);
 		;
 	// Rotate x1 to new position.
 	t = perimeter[m][i].value;
-	perimeter[m][i].value = perimeter[m][g].value;
-	perimeter[m][g].value = t;
+	perimeter[m][i].value = perimeter[m][g2].value;
+	perimeter[m][g2].value = t;
 	
 	// The g holds the roll position
 	if (++c == MIRROR_FIELD_COUNT) {
-		g = (g + 1) % (GRID_SIZE * 4);
+		g1 = (g1 + 1) % (GRID_SIZE * 4);
+		g2 = (g2 + 1) % (GRID_SIZE * 4);
 		c = 0;
 	}
 	
