@@ -138,15 +138,18 @@ int keyfile_create(char *keyFileFullPathName) {
 	for (i = 0; i < MIRROR_FIELD_COUNT * GRID_SIZE * GRID_SIZE; ++i) {
 	
 		// Randomly generate mirror char
-		switch (fgetc(urandom) % 3) {
+		switch (fgetc(urandom) % 5) {
 			case 0:
 				contents.decoded[contents.index++] = '/';
 				break;
 			case 1:
 				contents.decoded[contents.index++] = '\\';
 				break;
-			default:
+			case 2:
 				contents.decoded[contents.index++] = '-';
+				break;
+			default:
+				contents.decoded[contents.index++] = ' ';
 				break;
 		}
 
