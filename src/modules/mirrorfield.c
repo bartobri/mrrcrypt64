@@ -213,7 +213,7 @@ void mirrorfield_link(void) {
  * the cyphertext character is determined.
  */
 unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
-	int i, d, t;
+	int i, d;
 	unsigned char sv, ev, rv;
 	struct gridnode *startnode = NULL;
 	struct gridnode *endnode = NULL;
@@ -251,8 +251,7 @@ unsigned char mirrorfield_crypt_char(unsigned char ch, int debug) {
 	
 	// This is a way of returning the cleartext char as the cyphertext
 	// char and still preserve decryption.
-	t = perimeter[(m+1)%MIRROR_FIELD_COUNT][(ev+sv)%(GRID_SIZE*4)].value;
-	if (perimeter[m][t].value == t) {
+	if (perimeter[m][(ev+sv)%(GRID_SIZE*4)].value == (ev+sv)%(GRID_SIZE*4)) {
 		rv = sv;
 	}
 	
@@ -371,8 +370,8 @@ static void mirrorfield_roll_chars(int s, int e, int m) {
 	static int g1 = 0;
 	static int g2 = GRID_SIZE * 2;
 	static int c = 0;
-	
-	// Get value to rotate
+
+	// Get rotate order
 	if (perimeter[m][s].value > perimeter[m][e].value) {
 		x1 = s;
 		x2 = e;
