@@ -59,7 +59,10 @@ Uninstall:
 $ sudo make uninstall
 ```
 
-Furrther Documentation
+Further Documentation
 -----------------------
 
-I do not intend to provide documentation for this projetc beyond what you already see in this document. For usage information and examples, you can see my project [MrrCrypt](https://github.com/bartobri/mrrcrypt), as it operates the same.
+I do not intend to provide documentation for this project beyond what you
+already see in this document. However the usage is identical to the original
+[MrrCrypt](https://github.com/bartobri/mrrcrypt), so you can
+see the documentation for that project for more info.
