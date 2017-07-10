@@ -1,7 +1,7 @@
 NOTE: While this encryption program works, testing shows it is not as
 fast or as secure as my original MrrCrypt project. So as of now, have no
 plans to continue developing this. If you are interested in an encryption
-algorithm based on mirror fields, please see [MrrCrypt](https://github.com/bartobri/mrrcrypt).
+algorithm based on mirror fields, please see the original [MrrCrypt](https://github.com/bartobri/mrrcrypt).
 If for some reason you are still interested in this project, keep reading.
 
 MrrCrypt64
