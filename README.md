@@ -42,8 +42,8 @@ Download and Install
 Download and Build:
 
 ```
-$ git clone https://github.com/bartobri/mrrcrypt.git
-$ cd mrrcrypt
+$ git clone https://github.com/bartobri/mrrcrypt64.git
+$ cd mrrcrypt64
 $ make
 ```
 
